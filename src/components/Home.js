@@ -1,8 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Typography, Checkbox, Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
+import { Table, TableBody, TableCell, TableContainer,
+   TableHead, TableRow, Paper, Typography, Checkbox, Button,
+    Dialog, DialogActions, DialogContent, DialogTitle, TextField, FormControl,
+     InputLabel, Select, MenuItem,  CircularProgress } from '@mui/material';
 import { base_url } from '../envirment';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { IconButton } from '@mui/material';
+import EditIcon from '@mui/icons-material/Edit'; // MUI icon
 
 const WalimaTable = () => {
   const [data, setData] = useState([]);
@@ -10,6 +14,13 @@ const WalimaTable = () => {
   const [newMember, setNewMember] = useState({ group: '', name: '', people: 1 });
   const [errorMessage, setErrorMessage] = useState('');
   const [loading, setLoading] = useState(true);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+const [editMember, setEditMember] = useState({
+  _id: '',
+  groupId: '',
+  name: '',
+  people: 1,
+});
 
   useEffect(() => {
     const fetchGroups = async () => {
@@ -136,6 +147,45 @@ const WalimaTable = () => {
       setErrorMessage(err.message || 'Error deleting member');
     }
   };
+
+
+
+  const handleUpdateMember = () => {
+    const { groupId, _id, name, people } = editMember;
+    fetch(`${base_url}/api/groups/${groupId}/member/${_id}/edit`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, people }),
+    })
+      .then((res) => res.json())
+      .then((updated) => {
+        setData(prevData => {
+          const updatedGroups = prevData[0].groups.map(group => {
+            if (group._id === groupId) {
+              const updatedMembers = group.members.map(m =>
+                m._id === _id ? { ...m, name, people } : m
+              );
+              const newSum = updatedMembers.reduce((acc, m) => acc + m.people, 0);
+              return { ...group, members: updatedMembers, sum: newSum };
+            }
+            return group;
+          });
+          return [{ ...prevData[0], groups: updatedGroups }];
+        });
+        setEditDialogOpen(false);
+      });
+  };
+  
+
+  const openEditDialog = (groupId, member) => {
+    setEditMember({
+      _id: member._id,
+      groupId: groupId,
+      name: member.name,
+      people: member.people,
+    });
+    setEditDialogOpen(true);
+  };
   
   return (
     <div>
@@ -152,47 +202,86 @@ const WalimaTable = () => {
       </Button>
 
       {/* Render Groups and Members */}
-      {data.length > 0 && data[0].groups && (
-        data[0].groups.map((group, groupIdx) => (
-          <Paper key={groupIdx} sx={{ p: 2, mb: 3 }}>
-            <Typography variant="h6" sx={{ pl: 2, mt: 1 }}>
-              {group.index} (Total: {group.sum})
-            </Typography>
 
-            <Table size="small">
-              <TableHead>
-                <TableRow>
-                  <TableCell><strong>#</strong></TableCell>
-                  <TableCell><strong>Name</strong></TableCell>
-                  <TableCell align="right"><strong>People</strong></TableCell>
-                  <TableCell align="center"><strong>Card Submit</strong></TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {group.members.map((member, memberIdx) => (
-                  <TableRow key={memberIdx}>
-                    <TableCell>{memberIdx + 1}</TableCell>
-                    <TableCell>{member.name}</TableCell>
-                    <TableCell align="right">{member.people}</TableCell>
-                    <TableCell align="center">
-                      <Checkbox
-                        checked={member.isChecked}
-                        onChange={() => toggleCheckbox(groupIdx, memberIdx)}
-                      />
-                    </TableCell>
+      {loading ? (
+  <div style={{ display: 'flex', justifyContent: 'center', marginTop: '50px' }}>
+    <CircularProgress size={48} color="primary" />
+  </div>
+) : (
+  data.length > 0 && data[0].groups && data[0].groups.map((group, groupIdx) => (
+    <Paper
+      key={groupIdx}
+      elevation={3}
+      sx={{
+        p: 2,
+        mb: 4,
+        borderRadius: 3,
+        boxShadow: 4,
+        backgroundColor: "#f5f5f5"
+      }}
+    >
+      <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold', color: '#333' }}>
+        Group {group.index} — <span style={{ color: '#1976d2' }}>Total: {group.sum}</span>
+      </Typography>
 
-<TableCell align="center">
-  <IconButton onClick={() => handleDeleteMember(group._id, member._id, groupIdx, memberIdx)}>
-    <DeleteIcon />
-  </IconButton>
-</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </Paper>
-        ))
-      )}
+      <TableContainer component={Paper} sx={{ borderRadius: 2 }}>
+        <Table size="small" sx={{ minWidth: 650 }}>
+          <TableHead sx={{ backgroundColor: '#1976d2' }}>
+            <TableRow>
+              <TableCell sx={{ color: '#fff' }}><strong>#</strong></TableCell>
+              <TableCell sx={{ color: '#fff' }}><strong>Name</strong></TableCell>
+              <TableCell align="right" sx={{ color: '#fff' }}><strong>People</strong></TableCell>
+              <TableCell align="center" sx={{ color: '#fff' }}><strong>Card Submit</strong></TableCell>
+              <TableCell align="center" sx={{ color: '#fff' }}><strong>Delete</strong></TableCell>
+              <TableCell align="center" sx={{ color: '#fff' }}><strong>Edit</strong></TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {group.members.map((member, memberIdx) => (
+              <TableRow
+                key={memberIdx}
+                sx={{
+                  backgroundColor: memberIdx % 2 === 0 ? '#fafafa' : '#fff',
+                  '&:hover': {
+                    backgroundColor: '#e3f2fd'
+                  }
+                }}
+              >
+                <TableCell>{memberIdx + 1}</TableCell>
+                <TableCell>{member.name}</TableCell>
+                <TableCell align="right">{member.people}</TableCell>
+                <TableCell align="center">
+                  <Checkbox
+                    checked={member.isChecked}
+                    onChange={() => toggleCheckbox(groupIdx, memberIdx)}
+                    color="primary"
+                  />
+                </TableCell>
+                <TableCell align="center">
+                  <IconButton
+                    onClick={() => handleDeleteMember(group._id, member._id, groupIdx, memberIdx)}
+                    color="error"
+                  >
+                    <DeleteIcon />
+                  </IconButton>
+                </TableCell>
+                <TableCell align="center">
+                  <IconButton
+                    onClick={() => openEditDialog(group._id, member)}
+                    color="primary"
+                  >
+                    <EditIcon />
+                  </IconButton>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    </Paper>
+  ))
+)}
+
 
       {/* Add Member Dialog */}
       <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
@@ -243,6 +332,32 @@ const WalimaTable = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+
+      <Dialog open={editDialogOpen} onClose={() => setEditDialogOpen(false)}>
+  <DialogTitle>Edit Member</DialogTitle>
+  <DialogContent>
+    <TextField
+      fullWidth
+      label="Name"
+      value={editMember.name}
+      onChange={(e) => setEditMember({ ...editMember, name: e.target.value })}
+      sx={{ mb: 2 }}
+    />
+    <TextField
+      fullWidth
+      label="People"
+      type="number"
+      value={editMember.people}
+      onChange={(e) => setEditMember({ ...editMember, people: Number(e.target.value) })}
+    />
+  </DialogContent>
+  <DialogActions>
+    <Button onClick={() => setEditDialogOpen(false)}>Cancel</Button>
+    <Button variant="contained" onClick={handleUpdateMember}>Update</Button>
+  </DialogActions>
+</Dialog>
+
     </div>
   );
 };
