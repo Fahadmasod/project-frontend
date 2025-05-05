@@ -1,93 +1,144 @@
 import React, { useState, useEffect } from 'react';
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Typography, Checkbox } from '@mui/material';
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Typography, Checkbox, Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
 import { base_url } from '../envirment';
+import DeleteIcon from '@mui/icons-material/Delete';
+import { IconButton } from '@mui/material';
 
 const WalimaTable = () => {
-  const [data, setData] = useState([
-
-  ]);
-  const [selected, setSelected] = useState({});
-  const [error, setError] = useState(null);
-
+  const [data, setData] = useState([]);
+  const [openDialog, setOpenDialog] = useState(false);
+  const [newMember, setNewMember] = useState({ group: '', name: '', people: 1 });
+  const [errorMessage, setErrorMessage] = useState('');
   const [loading, setLoading] = useState(true);
 
-  // Fetch the saved data from the backend when the component mounts
   useEffect(() => {
     const fetchGroups = async () => {
-      
       try {
         const response = await fetch(`${base_url}/api/saveddatas`);
-
-        // Check if response is OK (status code 200-299)
         if (!response.ok) {
           throw new Error('Failed to fetch data');
         }
-
         const data = await response.json();
-        setData(data);  // Set the groups to state
-        console.log("data", data)
-        setLoading(false);  // Stop loading
+       console.log("data",data)
+        setData(data);
+        setLoading(false);
       } catch (err) {
-        setError(err.message);  // Set the error message
-        setLoading(false);  // Stop loading in case of error
+        setErrorMessage(err.message);
+        setLoading(false);
       }
     };
-
     fetchGroups();
   }, []);
 
-  // Handle checkbox toggle and send data to backend
-  const toggleCheckbox = (groupIdx, memberIdx) => {
+  // Handle form input changes
+  const handleChange = (e) => {
+    setNewMember({
+      ...newMember,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  // Handle adding a new member
+  const handleAddMember = () => {
     debugger
+    // Ensure "people" is a number
+    const peopleCount = parseInt(newMember.people, 10);  // Convert to number
+    
+    // Check if all necessary fields are present
+    if (newMember.group && newMember.name && !isNaN(peopleCount)) {
+      fetch(`${base_url}/api/groups/${newMember.group}/member`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: newMember.name,
+          people: peopleCount,  // Use the parsed number
+        }),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          // Update state with new member added to the correct group
+          setData((prevData) => {
+            const updatedGroups = prevData[0].groups.map((group) => {
+              if (group.index === newMember.group) {
+                group.members.push(data);
+                group.sum += peopleCount;  // Increment sum with the correct value
+              }
+              return group;
+            });
+            return [{ ...prevData[0], groups: updatedGroups }];
+          });
+          setOpenDialog(false);  // Close the dialog
+          setNewMember({ group: '', name: '', people: 1 });  // Reset the form
+        })
+        .catch((err) => {
+          setErrorMessage('Error adding member. Please try again.');
+        });
+    } else {
+      setErrorMessage('Invalid input. Please make sure all fields are correctly filled.');
+    }
+  };
+  
+  // Handle checkbox toggle
+  const toggleCheckbox = (groupIdx, memberIdx) => {
     const group = data[0].groups[groupIdx];
     const member = group.members[memberIdx];
+    const updatedMember = { ...member, isChecked: !member.isChecked };
 
-    // Toggle the local isChecked state
-    const updatedMember = {
-      ...member,
-      isChecked: !member.isChecked,
-    };
-
-    // Optimistically update the local state
-    setData(prevData => {
+    setData((prevData) => {
       const newData = [...prevData];
       newData[0].groups[groupIdx].members[memberIdx] = updatedMember;
       return newData;
     });
 
-    // Send the updated status to the backend
     fetch(`${base_url}/api/groups/${group._id}/member/${member._id}`, {
       method: 'PUT',
     })
-      .then(async response => {
-        if (!response.ok) {
-          const errorText = await response.text();
-          throw new Error(errorText);
-        }
-        return response.json();
-      })
-      .then(updatedMember => {
-        // Optionally, you can update the member again if necessary
-        setData(prevData => {
+      .then((response) => response.json())
+      .then((updatedMember) => {
+        setData((prevData) => {
           const newData = [...prevData];
           newData[0].groups[groupIdx].members[memberIdx] = updatedMember;
           return newData;
         });
       })
-      .catch(error => {
-        console.error("Error updating member status:", error.message);
+      .catch((error) => {
+        console.error('Error updating member status:', error.message);
       });
   };
 
 
 
-
-
-
-
-
+  const handleDeleteMember = async (groupId, memberId, groupIdx, memberIdx) => {
+    try {
+      const response = await fetch(`${base_url}/api/groups/${groupId}/member/${memberId}`, {
+        method: 'DELETE',
+      });
+  
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to delete member');
+      }
+  
+      const deleted = await response.json();
+  
+      // Update UI
+      setData(prevData => {
+        const newData = [...prevData];
+        const group = newData[0].groups[groupIdx];
+        group.sum -= deleted.member.people;
+        group.members.splice(memberIdx, 1);
+        return newData;
+      });
+    } catch (err) {
+      console.error('Delete error:', err.message);
+      setErrorMessage(err.message || 'Error deleting member');
+    }
+  };
+  
   return (
-    <TableContainer component={Paper} sx={{ maxWidth: 1000, margin: 'auto', mt: 4, p: 2 }}>
+    <div>
       <Typography variant="h5" align="center" sx={{ mb: 3 }}>
         Walima Invitation List
         {data.length > 0 && data[0].groups
@@ -95,6 +146,10 @@ const WalimaTable = () => {
           : ''}
       </Typography>
 
+      {/* Button to open the Add Member Dialog */}
+      <Button variant="contained" color="primary" onClick={() => setOpenDialog(true)}>
+        Add Member
+      </Button>
 
       {/* Render Groups and Members */}
       {data.length > 0 && data[0].groups && (
@@ -125,6 +180,12 @@ const WalimaTable = () => {
                         onChange={() => toggleCheckbox(groupIdx, memberIdx)}
                       />
                     </TableCell>
+
+<TableCell align="center">
+  <IconButton onClick={() => handleDeleteMember(group._id, member._id, groupIdx, memberIdx)}>
+    <DeleteIcon />
+  </IconButton>
+</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -132,9 +193,58 @@ const WalimaTable = () => {
           </Paper>
         ))
       )}
-    </TableContainer>
-  );
 
+      {/* Add Member Dialog */}
+      <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
+        <DialogTitle>Add Member</DialogTitle>
+        <DialogContent>
+          {errorMessage && <Typography color="error">{errorMessage}</Typography>}
+          <FormControl fullWidth margin="normal">
+            <InputLabel>Group Name</InputLabel>
+            <Select
+              name="group"
+              value={newMember.group}
+              onChange={handleChange}
+              fullWidth
+            >
+              {data[0]?.groups.map((group) => (
+                <MenuItem key={group.index} value={group.index}>
+                  {group.index}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          <TextField
+            label="Member Name"
+            name="name"
+            value={newMember.name}
+            onChange={handleChange}
+            fullWidth
+            margin="normal"
+            required
+          />
+          <TextField
+            label="Number of People"
+            name="people"
+            type="number"
+            value={newMember.people}
+            onChange={handleChange}
+            fullWidth
+            margin="normal"
+            required
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenDialog(false)} color="secondary">
+            Cancel
+          </Button>
+          <Button onClick={handleAddMember} color="primary">
+            Add Member
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </div>
+  );
 };
 
 export default WalimaTable;
