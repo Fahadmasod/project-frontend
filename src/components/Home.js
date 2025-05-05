@@ -225,15 +225,15 @@ const [editMember, setEditMember] = useState({
       </Typography>
 
       <TableContainer component={Paper} sx={{ borderRadius: 2 }}>
-        <Table size="small" sx={{ minWidth: 650 }}>
+        <Table size="small" sx={{ minWidth: 100 }}>
           <TableHead sx={{ backgroundColor: '#1976d2' }}>
             <TableRow>
-              <TableCell sx={{ color: '#fff' }}><strong>#</strong></TableCell>
-              <TableCell sx={{ color: '#fff' }}><strong>Name</strong></TableCell>
-              <TableCell align="right" sx={{ color: '#fff' }}><strong>People</strong></TableCell>
-              <TableCell align="center" sx={{ color: '#fff' }}><strong>Card Submit</strong></TableCell>
-              <TableCell align="center" sx={{ color: '#fff' }}><strong>Delete</strong></TableCell>
-              <TableCell align="center" sx={{ color: '#fff' }}><strong>Edit</strong></TableCell>
+              {/* <TableCell align="left" sx={{ color: '#fff' }}><strong>#</strong></TableCell> */}
+              <TableCell  align="left" sx={{ color: '#fff' }}><strong>Name</strong></TableCell>
+              <TableCell align="left" sx={{ color: '#fff' }}><strong>People</strong></TableCell>
+              <TableCell align="left" sx={{ color: '#fff' }}><strong>Card Submit</strong></TableCell>
+              <TableCell align="left" sx={{ color: '#fff' }}><strong>Delete & Edit</strong></TableCell>
+              {/* <TableCell align="left" sx={{ color: '#fff' }}><strong>Edit</strong></TableCell> */}
             </TableRow>
           </TableHead>
           <TableBody>
@@ -247,25 +247,23 @@ const [editMember, setEditMember] = useState({
                   }
                 }}
               >
-                <TableCell>{memberIdx + 1}</TableCell>
+                {/* <TableCell>{memberIdx + 1}</TableCell> */}
                 <TableCell>{member.name}</TableCell>
-                <TableCell align="right">{member.people}</TableCell>
-                <TableCell align="center">
+                <TableCell align="left">{member.people}</TableCell>
+                <TableCell align="left">
                   <Checkbox
                     checked={member.isChecked}
                     onChange={() => toggleCheckbox(groupIdx, memberIdx)}
                     color="primary"
                   />
                 </TableCell>
-                <TableCell align="center">
+                <TableCell align="left">
                   <IconButton
                     onClick={() => handleDeleteMember(group._id, member._id, groupIdx, memberIdx)}
                     color="error"
                   >
                     <DeleteIcon />
                   </IconButton>
-                </TableCell>
-                <TableCell align="center">
                   <IconButton
                     onClick={() => openEditDialog(group._id, member)}
                     color="primary"
@@ -273,6 +271,7 @@ const [editMember, setEditMember] = useState({
                     <EditIcon />
                   </IconButton>
                 </TableCell>
+               
               </TableRow>
             ))}
           </TableBody>
