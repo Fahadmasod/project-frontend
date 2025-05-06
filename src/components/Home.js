@@ -4,10 +4,16 @@ import {
   TableHead, TableRow, Paper, Typography, Checkbox, Button,
   Dialog, DialogActions, DialogContent, DialogTitle, TextField, FormControl,
   InputLabel, Select, MenuItem, CircularProgress, IconButton
+
 } from '@mui/material';
 import { base_url } from '../envirment';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
+import EditMember from './Walima/EditMember';
+import AddMemberDialog from './Walima/AddMemberDialog';
+import ExpandLessIcon from '@mui/icons-material/ExpandLess';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+
 
 const WalimaTable = () => {
   const [data, setData] = useState([]);
@@ -16,6 +22,10 @@ const WalimaTable = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const [loading, setLoading] = useState(true);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [collapsedGroups, setCollapsedGroups] = useState({});
+  
+
+
   const [editMember, setEditMember] = useState({
     _id: '',
     groupId: '',
@@ -25,20 +35,23 @@ const WalimaTable = () => {
   const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
-    const fetchGroups = async () => {
-      try {
-        const response = await fetch(`${base_url}/api/saveddatas`);
-        if (!response.ok) throw new Error('Failed to fetch data');
-        const data = await response.json();
-        setData(data);
-        setLoading(false);
-      } catch (err) {
-        setErrorMessage(err.message);
-        setLoading(false);
-      }
-    };
     fetchGroups();
   }, []);
+
+  const fetchGroups = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch(`${base_url}/api/saveddatas`);
+      if (!response.ok) throw new Error('Failed to fetch data');
+      const data = await response.json();
+      setData(data);
+      setLoading(false);
+    } catch (err) {
+      setErrorMessage(err.message);
+      setLoading(false);
+    }
+  };
+
 
   const handleChange = (e) => {
     setNewMember({
@@ -48,6 +61,7 @@ const WalimaTable = () => {
   };
 
   const handleAddMember = () => {
+    setLoading(true);
     const peopleCount = parseInt(newMember.people, 10);
     if (newMember.group && newMember.name && !isNaN(peopleCount)) {
       fetch(`${base_url}/api/groups/${newMember.group}/member`, {
@@ -72,12 +86,16 @@ const WalimaTable = () => {
           });
           setOpenDialog(false);
           setNewMember({ group: '', name: '', people: 1 });
+          setLoading(false);
+          fetchGroups()
         })
         .catch(() => {
           setErrorMessage('Error adding member. Please try again.');
+          setLoading(false);
         });
     } else {
       setErrorMessage('Invalid input. Please make sure all fields are correctly filled.');
+      setLoading(false);
     }
   };
 
@@ -110,17 +128,21 @@ const WalimaTable = () => {
 
   const handleDeleteMember = async (groupId, memberId, groupIdx, memberIdx) => {
     try {
+      setLoading(true);
+  
       const response = await fetch(`${base_url}/api/groups/${groupId}/member/${memberId}`, {
         method: 'DELETE',
       });
-
+  
       if (!response.ok) {
+        setLoading(false);
         const errorData = await response.json();
         throw new Error(errorData.message || 'Failed to delete member');
+       
       }
-
+  
       const deleted = await response.json();
-
+  
       setData(prevData => {
         const newData = [...prevData];
         const group = newData[0].groups[groupIdx];
@@ -128,37 +150,20 @@ const WalimaTable = () => {
         group.members.splice(memberIdx, 1);
         return newData;
       });
+      setLoading(false);
+  
     } catch (err) {
       console.error('Delete error:', err.message);
       setErrorMessage(err.message || 'Error deleting member');
+      setLoading(false);
+    } finally {
+     
+      setLoading(false);
     }
   };
+  
 
-  const handleUpdateMember = () => {
-    const { groupId, _id, name, people } = editMember;
-    fetch(`${base_url}/api/groups/${groupId}/member/${_id}/edit`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, people }),
-    })
-      .then((res) => res.json())
-      .then((updated) => {
-        setData(prevData => {
-          const updatedGroups = prevData[0].groups.map(group => {
-            if (group._id === groupId) {
-              const updatedMembers = group.members.map(m =>
-                m._id === _id ? { ...m, name, people } : m
-              );
-              const newSum = updatedMembers.reduce((acc, m) => acc + m.people, 0);
-              return { ...group, members: updatedMembers, sum: newSum };
-            }
-            return group;
-          });
-          return [{ ...prevData[0], groups: updatedGroups }];
-        });
-        setEditDialogOpen(false);
-      });
-  };
+ 
 
   const openEditDialog = (groupId, member) => {
     setEditMember({
@@ -170,6 +175,14 @@ const WalimaTable = () => {
     setEditDialogOpen(true);
   };
 
+
+  const toggleGroupCollapse = (groupIndex) => {
+    setCollapsedGroups(prev => ({
+      ...prev,
+      [groupIndex]: !prev[groupIndex],
+    }));
+  };
+  
   return (
     <div>
       <Typography variant="h5" align="center" sx={{ mb: 3 }}>
@@ -216,11 +229,16 @@ const WalimaTable = () => {
                 backgroundColor: "#f5f5f5"
               }}
             >
-              <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold', color: '#333' }}>
-                Group {group.index} — <span style={{ color: '#1976d2' }}>Total: {group.sum}</span>
-              </Typography>
-
-              <TableContainer component={Paper} sx={{ borderRadius: 2 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+  <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold', color: '#333' }}>
+    Group {group.index} — <span style={{ color: '#1976d2' }}>Total: {group.sum}</span>
+  </Typography>
+  <IconButton onClick={() => toggleGroupCollapse(group.index)}>
+    {collapsedGroups[group.index] ? <ExpandMoreIcon /> : <ExpandLessIcon />}
+  </IconButton>
+</div>
+{!collapsedGroups[group.index] && (
+  <TableContainer component={Paper} sx={{ borderRadius: 2 }}>
                 <Table size="small" sx={{ minWidth: 100 }}>
                   <TableHead sx={{ backgroundColor: '#1976d2' }}>
                     <TableRow>
@@ -269,85 +287,35 @@ const WalimaTable = () => {
                   </TableBody>
                 </Table>
               </TableContainer>
+              )}
             </Paper>
           );
         })
       )}
 
       {/* Add Member Dialog */}
-      <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
-        <DialogTitle>Add Member</DialogTitle>
-        <DialogContent>
-          {errorMessage && <Typography color="error">{errorMessage}</Typography>}
-          <FormControl fullWidth margin="normal">
-            <InputLabel>Group Name</InputLabel>
-            <Select
-              name="group"
-              value={newMember.group}
-              onChange={handleChange}
-              fullWidth
-            >
-              {data[0]?.groups.map((group) => (
-                <MenuItem key={group.index} value={group.index}>
-                  {group.index}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-          <TextField
-            label="Member Name"
-            name="name"
-            value={newMember.name}
-            onChange={handleChange}
-            fullWidth
-            margin="normal"
-            required
-          />
-          <TextField
-            label="Number of People"
-            name="people"
-            type="number"
-            value={newMember.people}
-            onChange={handleChange}
-            fullWidth
-            margin="normal"
-            required
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenDialog(false)} color="secondary">
-            Cancel
-          </Button>
-          <Button onClick={handleAddMember} color="primary">
-            Add Member
-          </Button>
-        </DialogActions>
-      </Dialog>
+    
+      <AddMemberDialog
+  open={openDialog}
+  onClose={() => setOpenDialog(false)}
+  newMember={newMember}
+  onChange={handleChange}
+  onSubmit={handleAddMember}
+  groups={data[0]?.groups || []}
+  errorMessage={errorMessage}
+/>
 
       {/* Edit Member Dialog */}
-      <Dialog open={editDialogOpen} onClose={() => setEditDialogOpen(false)}>
-        <DialogTitle>Edit Member</DialogTitle>
-        <DialogContent>
-          <TextField
-            fullWidth
-            label="Name"
-            value={editMember.name}
-            onChange={(e) => setEditMember({ ...editMember, name: e.target.value })}
-            sx={{ mb: 2 }}
-          />
-          <TextField
-            fullWidth
-            label="People"
-            type="number"
-            value={editMember.people}
-            onChange={(e) => setEditMember({ ...editMember, people: Number(e.target.value) })}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setEditDialogOpen(false)}>Cancel</Button>
-          <Button variant="contained" onClick={handleUpdateMember}>Update</Button>
-        </DialogActions>
-      </Dialog>
+   
+      <EditMember
+        open={editDialogOpen}
+        onClose={() => setEditDialogOpen(false)}
+        member={editMember}
+        setMember={setEditMember}
+      
+        data={data}
+        setData={setData}
+      />
     </div>
   );
 };
