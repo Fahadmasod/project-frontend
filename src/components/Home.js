@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import WalimaTable from './Walima/WalimaList';
 import Nikah from './Walima/Nikah';
 import { Button } from '@mui/material';
+import nikahImage from '../nikah.jpg'; // adjust path if needed
 
 const Home = () => {
   const [visibleComponent, setVisibleComponent] = useState(null);
@@ -13,9 +14,16 @@ const Home = () => {
   const handleShowNikah = () => {
     setVisibleComponent('nikah');
   };
+  const backgroundStyle = {
+    backgroundImage: `url(${nikahImage})`,
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    minHeight: '100vh',
+    padding: '20px'
+  };
 
   return (
-    <div>
+    <div style={backgroundStyle}>
       {visibleComponent !== 'walima' && (
         <Button variant="contained" color="primary" onClick={handleShowWalima}>
           Show Walima List

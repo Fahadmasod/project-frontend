@@ -187,20 +187,50 @@ const WalimaTable = () => {
   
   return (
     <div>
-      <Typography variant="h5" align="center" sx={{ mb: 3 }}>
-        Walima Invitation List
+     
+
+
+
+       <Typography
+        variant="h5"
+        align="center"
+        sx={{ mb: 3, color: '#fff' }} // Make title text white
+      >
+         Walima Invitation List
         {data.length > 0 && data[0].groups
           ? ` (Total: ${data[0].groups.reduce((acc, group) => acc + group.sum, 0)})`
           : ''}
       </Typography>
-
+      
       <TextField
         label="Search Member Global"
+        placeholder="Type to search..." // Optional: for extra white placeholder
         variant="outlined"
         fullWidth
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value.toLowerCase())}
-        sx={{ mb: 3 }}
+        sx={{
+          mb: 3,
+          input: { color: '#fff' }, // input text
+          label: { color: '#fff' }, // label text
+          '& .MuiOutlinedInput-root': {
+            '& fieldset': {
+              borderColor: '#fff', // border
+            },
+            '&:hover fieldset': {
+              borderColor: '#ccc',
+            },
+            '&.Mui-focused fieldset': {
+              borderColor: '#fff',
+            },
+          },
+        }}
+        InputLabelProps={{
+          style: { color: '#fff' }, // label color
+        }}
+        InputProps={{
+          style: { color: '#fff' }, // input color (fallback)
+        }}
       />
 
       <Button variant="contained" color="primary" onClick={() => setOpenDialog(true)} sx={{ mb: 2 }}>
