@@ -198,7 +198,7 @@ const WalimaTable = () => {
       >
          Walima Invitation List
         {data.length > 0 && data[0].groups
-          ? ` (Total: ${data[0].groups.reduce((acc, group) => acc + group.sum, 0)})`
+          ? `(${data[0].groups.reduce((acc, group) => acc + group.sum, 0)})`
           : ''}
       </Typography>
       
