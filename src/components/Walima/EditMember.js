@@ -6,7 +6,7 @@ import {
 import { base_url } from '../../envirment';
 
 
-const EditMember = ({ open, onClose, member, setMember ,data,setData }) => {
+const EditMember = ({ open, onClose, member, setMember ,data,setData,url }) => {
 
   
     
@@ -22,7 +22,7 @@ const EditMember = ({ open, onClose, member, setMember ,data,setData }) => {
  const handleUpdateMember = () => {
     debugger
     const { groupId, _id, name, people } = member;
-    fetch(`${base_url}/api/groups/${groupId}/member/${_id}/edit`, {
+    fetch(`${base_url}/${url}/groups/${groupId}/member/${_id}/edit`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name, people }),

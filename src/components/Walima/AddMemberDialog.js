@@ -11,7 +11,8 @@ const AddMemberDialog = ({
   onChange,
   onSubmit,
   groups,
-  errorMessage
+  errorMessage,
+  url
 }) => {
   return (
     <Dialog open={open} onClose={onClose}>
