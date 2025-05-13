@@ -296,6 +296,7 @@ const WalimaTable = () => {
       {/* Add Member Dialog */}
     
       <AddMemberDialog
+      tittle={'Walima'}
   open={openDialog}
   onClose={() => setOpenDialog(false)}
   newMember={newMember}
@@ -308,6 +309,7 @@ const WalimaTable = () => {
       {/* Edit Member Dialog */}
    
       <EditMember
+        tittle={"Walima"}
       url={'api'}
         open={editDialogOpen}
         onClose={() => setEditDialogOpen(false)}

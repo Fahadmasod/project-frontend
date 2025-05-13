@@ -101,6 +101,7 @@ const WalimaTable = () => {
   };
 
   const toggleCheckbox = (groupIdx, memberIdx) => {
+    debugger
     const group = data[0].groups[groupIdx];
     const member = group.members[memberIdx];
     const updatedMember = { ...member, isChecked: !member.isChecked };
@@ -297,6 +298,7 @@ const WalimaTable = () => {
       {/* Add Member Dialog */}
     
       <AddMemberDialog
+        tittle={"Nikah"}
        url={'apii'}
   open={openDialog}
   onClose={() => setOpenDialog(false)}
@@ -310,6 +312,7 @@ const WalimaTable = () => {
       {/* Edit Member Dialog */}
    
       <EditMember
+      tittle={"Nikah"}
       url={'apii'}
         open={editDialogOpen}
         onClose={() => setEditDialogOpen(false)}

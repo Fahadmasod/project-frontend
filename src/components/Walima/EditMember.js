@@ -6,7 +6,7 @@ import {
 import { base_url } from '../../envirment';
 
 
-const EditMember = ({ open, onClose, member, setMember ,data,setData,url }) => {
+const EditMember = ({ open, onClose, member, setMember ,data,setData,url,tittle }) => {
 
   
     
@@ -50,7 +50,7 @@ const EditMember = ({ open, onClose, member, setMember ,data,setData,url }) => {
    
   return (
     <Dialog open={open} onClose={onClose}>
-      <DialogTitle>Edit Member</DialogTitle>
+      <DialogTitle>{tittle} Edit Member</DialogTitle>
       <DialogContent>
         <TextField
           fullWidth

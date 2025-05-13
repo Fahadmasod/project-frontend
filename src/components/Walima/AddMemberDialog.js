@@ -12,11 +12,12 @@ const AddMemberDialog = ({
   onSubmit,
   groups,
   errorMessage,
-  url
+  url,
+  tittle
 }) => {
   return (
     <Dialog open={open} onClose={onClose}>
-      <DialogTitle>Add Member</DialogTitle>
+      <DialogTitle>{tittle} Add Member</DialogTitle>
       <DialogContent>
         {errorMessage && <Typography color="error">{errorMessage}</Typography>}
         <FormControl fullWidth margin="normal">
