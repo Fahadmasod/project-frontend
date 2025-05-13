@@ -188,10 +188,8 @@ const WalimaTable = () => {
   return (
     <div>
       <Typography variant="h5" align="center" sx={{ mb: 3 }}>
-        Nikah Invitation List
-        {data.length > 0 && data[0].groups
-          ? ` (Total: ${data[0].groups.reduce((acc, group) => acc + group.sum, 0)})`
-          : ''}
+        Nikah Invitation List {data.length > 0 ?   data[0].total_sum:""}
+
       </Typography>
 
       <TextField

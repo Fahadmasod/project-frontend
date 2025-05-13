@@ -39,12 +39,14 @@ const WalimaTable = () => {
   }, []);
 
   const fetchGroups = async () => {
+    debugger
     setLoading(true);
     try {
       const response = await fetch(`${base_url}/api/saveddatas`);
       if (!response.ok) throw new Error('Failed to fetch data');
       const data = await response.json();
       setData(data);
+      console.log(data[0].total_sum)
       setLoading(false);
     } catch (err) {
       setErrorMessage(err.message);
@@ -186,10 +188,8 @@ const WalimaTable = () => {
   return (
     <div>
       <Typography variant="h5" align="center" sx={{ mb: 3 }}>
-        Walima Invitation List
-        {data.length > 0 && data[0].groups
-          ? ` (Total: ${data[0].groups.reduce((acc, group) => acc + group.sum, 0)})`
-          : ''}
+        Walima Invitation List  {data.length > 0 ?   data[0].total_sum:""}
+
       </Typography>
 
       <TextField

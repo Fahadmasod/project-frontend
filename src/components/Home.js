@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
 import WalimaTable from './Walima/WalimaList';
 import Nikah from './Walima/Nikah';
-import {
-  Button
-} from '@mui/material';
+import { Button } from '@mui/material';
 
 const Home = () => {
   const [visibleComponent, setVisibleComponent] = useState(null);
@@ -18,12 +16,21 @@ const Home = () => {
 
   return (
     <div>
-      <Button variant="contained" color="primary" onClick={handleShowWalima}>
-        Show Walima List
-      </Button>
-      <Button variant="contained" color="secondary" onClick={handleShowNikah} style={{ marginLeft: '10px' }}>
-        Show Nikah List
-      </Button>
+      {visibleComponent !== 'walima' && (
+        <Button variant="contained" color="primary" onClick={handleShowWalima}>
+          Show Walima List
+        </Button>
+      )}
+      {visibleComponent !== 'nikah' && (
+        <Button
+          variant="contained"
+          color="secondary"
+          onClick={handleShowNikah}
+          style={{ marginLeft: '10px' }}
+        >
+          Show Nikah List
+        </Button>
+      )}
 
       {visibleComponent === 'walima' && <WalimaTable />}
       {visibleComponent === 'nikah' && <Nikah />}
