@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect ,useContext} from 'react';
 import {
   Table, TableBody, TableCell, TableContainer,
   TableHead, TableRow, Paper, Typography, Checkbox, Button,
@@ -13,14 +13,17 @@ import EditMember from '../Walima/EditMember';
 import AddMemberDialog from '../Walima/AddMemberDialog';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import { WalimaContext } from '../../WalimaContext'; 
+
 
 
 const WalimaTable = () => {
-  const [data, setData] = useState([]);
+  const { data, loading, errorMessage, fetchGroups,setErrorMessage,setLoading , setData } = useContext(WalimaContext); // <-- use context
+  // const [data, setData] = useState([]);
   const [openDialog, setOpenDialog] = useState(false);
   const [newMember, setNewMember] = useState({ group: '', name: '', people: 1 });
-  const [errorMessage, setErrorMessage] = useState('');
-  const [loading, setLoading] = useState(true);
+  // const [errorMessage, setErrorMessage] = useState('');
+  // const [loading, setLoading] = useState(true);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [collapsedGroups, setCollapsedGroups] = useState({});
   
@@ -34,25 +37,25 @@ const WalimaTable = () => {
   });
   const [searchTerm, setSearchTerm] = useState('');
 
-  useEffect(() => {
-    fetchGroups();
-  }, []);
+  // useEffect(() => {
+  //   fetchGroups();
+  // }, []);
 
-  const fetchGroups = async () => {
-    debugger
-    setLoading(true);
-    try {
-      const response = await fetch(`${base_url}/api/saveddatas`);
-      if (!response.ok) throw new Error('Failed to fetch data');
-      const data = await response.json();
-      setData(data);
-      console.log(data[0].total_sum)
-      setLoading(false);
-    } catch (err) {
-      setErrorMessage(err.message);
-      setLoading(false);
-    }
-  };
+  // const fetchGroups = async () => {
+    
+  //   setLoading(true);
+  //   try {
+  //     const response = await fetch(`${base_url}/api/saveddatas`);
+  //     if (!response.ok) throw new Error('Failed to fetch data');
+  //     const data = await response.json();
+  //     setData(data);
+  //     console.log(data[0].total_sum)
+  //     setLoading(false);
+  //   } catch (err) {
+  //     setErrorMessage(err.message);
+  //     setLoading(false);
+  //   }
+  // };
 
 
   const handleChange = (e) => {
