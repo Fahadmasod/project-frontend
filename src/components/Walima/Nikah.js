@@ -129,6 +129,7 @@ const WalimaTable = () => {
   };
 
   const handleDeleteMember = async (groupId, memberId, groupIdx, memberIdx) => {
+    debugger
     try {
       setLoading(true);
   
@@ -153,6 +154,7 @@ const WalimaTable = () => {
         return newData;
       });
       setLoading(false);
+      fetchGroups()
   
     } catch (err) {
       console.error('Delete error:', err.message);

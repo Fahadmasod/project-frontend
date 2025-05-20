@@ -9,8 +9,8 @@ import {
 import { base_url } from '../../envirment';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
-import EditMember from '../Walima/EditMember';
-import AddMemberDialog from '../Walima/AddMemberDialog';
+import EditMember from './EditMember';
+import AddMemberDialog from './AddMemberDialog';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { WalimaContext } from '../../WalimaContext'; 
