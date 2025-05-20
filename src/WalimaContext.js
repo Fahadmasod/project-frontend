@@ -5,6 +5,7 @@ export const WalimaContext = createContext();
 
 export const WalimaProvider = ({ children }) => {
   const [data, setData] = useState([]);
+    const [data1, setData1] = useState([]);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
 
@@ -29,27 +30,27 @@ export const WalimaProvider = ({ children }) => {
 
 
 
-    useEffect(() => {
-    fetchGroupsnikha();
-  }, []);
+  //   useEffect(() => {
+  //   fetchGroupsnikha();
+  // }, []);
 
-  const fetchGroupsnikha = async () => {
-    debugger
-    setLoading(true);
-    try {
-      const response = await fetch(`${base_url}/apii/saveddata1`);
-      if (!response.ok) throw new Error('Failed to fetch data');
-      const data = await response.json();
-      setData(data);
-      setLoading(false);
-    } catch (err) {
-      setErrorMessage(err.message);
-      setLoading(false);
-    }
-  };
+  // const fetchGroupsnikha = async () => {
+  //   debugger
+  //   setLoading(true);
+  //   try {
+  //     const response = await fetch(`${base_url}/apii/saveddata1`);
+  //     if (!response.ok) throw new Error('Failed to fetch data');
+  //     const data = await response.json();
+  //     setData1(data);
+  //     setLoading(false);
+  //   } catch (err) {
+  //     setErrorMessage(err.message);
+  //     setLoading(false);
+  //   }
+  // };
 
   return (
-    <WalimaContext.Provider value={{ data, setData, loading, errorMessage, fetchGroups,setLoading,setErrorMessage,setData ,fetchGroupsnikha}}>
+    <WalimaContext.Provider value={{ data, setData,data1, setData1, loading, errorMessage, fetchGroups,setLoading,setErrorMessage,setData }}>
       {children}
     </WalimaContext.Provider>
   );
