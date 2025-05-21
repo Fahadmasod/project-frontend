@@ -6,7 +6,7 @@ import InfoGrid from './InfoGrid.jsx';
 import InvitationDialog from '../components/InvitationDialog';
 import WalimaProtected from './WalimaProtected';
 import Nikah from './Walima/Nikah';
-import nikahImage from '../card.png';
+import nikahImage from '../nikah.jpg';
 
 const Home = () => {
   const [visibleComponent, setVisibleComponent] = useState(null);
