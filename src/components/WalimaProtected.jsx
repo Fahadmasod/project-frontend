@@ -5,7 +5,7 @@ import NIkhah from '../components/Walima/Nikah';
 
 const allowedPasswords = [
   'fiza321', 'fahad321', 'anas321', 'noureen321',
-  'sarim321', 'subhana321', 'zaki321', 'shibli321'
+  'sarim321', 'subhana321', 'zaki321', 'shibli321','nida321'
 ];
 
 const SESSION_KEY = 'walima_session';

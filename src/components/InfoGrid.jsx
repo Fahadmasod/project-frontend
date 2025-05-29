@@ -28,8 +28,9 @@ const InfoGrid = ({ onShowInvitationCard }) => (
         <Card
           sx={{
             py: 2,
-            height: 100, // Only one height definition
+            height: 120, // Only one height definition
             display: 'flex',
+              width: 100, // Only one height definition
             flexDirection: 'column',
             justifyContent: 'center',
             alignItems: 'center',
